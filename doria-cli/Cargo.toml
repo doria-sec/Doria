@@ -1,0 +1,3 @@
+[workspace]
+members = ["doria-cli","doria-core", "doria-scanner","doria-types"]
+resolver = "2"
