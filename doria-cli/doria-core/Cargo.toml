@@ -1,6 +1,24 @@
 [package]
 name = "doria-core"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
+# Shared types and findings schema
+doria-types = { path = "../doria-types" }
+
+# JS/TS AST parsing
+swc_core = { version = "0.90", features = ["ecma_parser", "ecma_ast", "ecma_visit"] }
+
+# Python AST parsing
+rustpython-parser = "0.3"
+
+# Serialisation
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Error handling
+anyhow = "1"
+
+# Timestamps
+chrono = { version = "0.4", features = ["serde"] }
