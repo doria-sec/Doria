@@ -4,21 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# Shared types and findings schema
-doria-types = { path = "../doria-types" }
+# This specific version of swc_core is the most stable for the 0.9x branch
+swc_core = { version = "=0.90.37", features = ["ecma_parser", "ecma_ast", "ecma_visit"] }
 
-# JS/TS AST parsing
-swc_core = { version = "0.90", features = ["ecma_parser", "ecma_ast", "ecma_visit"] }
+# We MUST pin Serde to 1.0.196 because swc_common 0.33.x/0.40.x is hardcoded to it
+serde = { version = "=1.0.196", features = ["derive"] }
 
-# Python AST parsing
-rustpython-parser = "0.3"
+# We MUST use an older serde_json that doesn't require Serde 1.0.210+
+serde_json = "=1.0.110"
 
-# Serialisation
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-
-# Error handling
-anyhow = "1"
-
-# Timestamps
-chrono = { version = "0.4", features = ["serde"] }
