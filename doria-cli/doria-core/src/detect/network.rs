@@ -96,62 +96,59 @@ impl NetworkDetector {
 
 impl Visit for NetworkDetector {
     fn visit_call_expr(&mut self, call: &CallExpr) {
-        match &call.callee {
-            Callee::Expr(expr) => {
-                match expr.as_ref() {
-                    // Detects: http.request(...), https.get(...), axios.post(...)
-                    Expr::Member(member) => {
-                        if let Expr::Ident(obj) = member.obj.as_ref() {
-                            if let MemberProp::Ident(prop) = &member.prop {
-                                let obj_name = obj.sym.as_ref();
-                                let method_name = prop.sym.as_ref();
+        if let Callee::Expr(expr) = &call.callee {
+            match expr.as_ref() {
+                // Detects: http.request(...), https.get(...), axios.post(...)
+                Expr::Member(member) => {
+                    if let Expr::Ident(obj) = member.obj.as_ref() {
+                        if let MemberProp::Ident(prop) = &member.prop {
+                            let obj_name = obj.sym.as_ref();
+                            let method_name = prop.sym.as_ref();
 
-                                if NETWORK_OBJECTS.contains(&obj_name)
-                                    && NETWORK_FUNCTIONS.contains(&method_name)
-                                {
-                                    let line = call.span.lo.0;
-                                    self.add_finding(
-                                        line,
-                                        0,
-                                        format!(
-                                            "Outbound network call via {}.{}() detected",
-                                            obj_name, method_name
-                                        ),
-                                        None,
-                                        0.85,
-                                    );
-                                }
+                            if NETWORK_OBJECTS.contains(&obj_name)
+                                && NETWORK_FUNCTIONS.contains(&method_name)
+                            {
+                                let line = call.span.lo.0;
+                                self.add_finding(
+                                    line,
+                                    0,
+                                    format!(
+                                        "Outbound network call via {}.{}() detected",
+                                        obj_name, method_name
+                                    ),
+                                    None,
+                                    0.85,
+                                );
                             }
                         }
                     }
-                    // Detects: fetch('http://...')
-                    Expr::Ident(ident) => {
-                        let name = ident.sym.as_ref();
-                        if NETWORK_FUNCTIONS.contains(&name) {
-                            let line = call.span.lo.0;
-
-                            // Try to grab the URL from the first argument as evidence
-                            let evidence = call.args.first().and_then(|arg| {
-                                if let Expr::Lit(Lit::Str(s)) = arg.expr.as_ref() {
-                                    Some(s.value.to_string())
-                                } else {
-                                    None
-                                }
-                            });
-
-                            self.add_finding(
-                                line,
-                                0,
-                                format!("Outbound network call via {}() detected", name),
-                                evidence,
-                                0.80,
-                            );
-                        }
-                    }
-                    _ => {}
                 }
+                // Detects: fetch('http://...')
+                Expr::Ident(ident) => {
+                    let name = ident.sym.as_ref();
+                    if NETWORK_FUNCTIONS.contains(&name) {
+                        let line = call.span.lo.0;
+
+                        // Try to grab the URL from the first argument as evidence
+                        let evidence = call.args.first().and_then(|arg| {
+                            if let Expr::Lit(Lit::Str(s)) = arg.expr.as_ref() {
+                                Some(s.value.to_string())
+                            } else {
+                                None
+                            }
+                        });
+
+                        self.add_finding(
+                            line,
+                            0,
+                            format!("Outbound network call via {}() detected", name),
+                            evidence,
+                            0.80,
+                        );
+                    }
+                }
+                _ => {}
             }
-            _ => {}
         }
 
         call.visit_children_with(self);
@@ -171,12 +168,12 @@ mod tests {
     use super::*;
     use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
     use swc_core::common::{SourceMap, FileName};
-    use swc_core::ecma::visit::VisitWith;
-    use std::sync::Arc;
+    // use swc_core::ecma::visit::VisitWith;
+    // use std::sync::Arc;
 
     fn detect_in_js(code: &str) -> Vec<Finding> {
-        let cm = Arc::new(SourceMap::default());
-        let fm = cm.new_source_file(FileName::Anon.into(), code.to_string());
+        let cm = std::rc::Rc::new(SourceMap::default());
+        let fm = cm.new_source_file(FileName::Anon, code.to_string());
         let lexer = Lexer::new(
             Syntax::Es(Default::default()),
             Default::default(),
