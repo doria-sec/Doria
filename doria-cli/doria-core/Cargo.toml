@@ -4,12 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# This specific version of swc_core is the most stable for the 0.9x branch
-swc_core = { version = "=0.90.37", features = ["ecma_parser", "ecma_ast", "ecma_visit"] }
+doria-types = { path = "../doria-types" }
 
+# This specific version of swc_core is the most stable for the 0.9x branch
+swc_core = { version = "=0.90.37", features = [
+    "ecma_parser",
+    "ecma_ast",
+    "ecma_visit",
+    "common",
+] }
 # We MUST pin Serde to 1.0.196 because swc_common 0.33.x/0.40.x is hardcoded to it
 serde = { version = "=1.0.196", features = ["derive"] }
 
 # We MUST use an older serde_json that doesn't require Serde 1.0.210+
 serde_json = "=1.0.110"
-

@@ -154,6 +154,7 @@ version = "0.1.0"
 name = "doria-core"
 version = "0.1.0"
 dependencies = [
+ "doria-types",
  "serde",
  "serde_json",
  "swc_core",
@@ -780,6 +781,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ecbbbf25e5d035165bde87f2388f9fbe6d5ce38ddd2c6cb9f24084823a9c0044"
 dependencies = [
  "swc_atoms",
+ "swc_common",
  "swc_ecma_ast",
  "swc_ecma_parser",
  "swc_ecma_transforms_base",
