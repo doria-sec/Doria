@@ -1,8 +1,8 @@
 # DORIA
 
-> *Doria* — Swahili for **patrol**. That is what it does. It never stops moving through your codebase.
+> *Doria* ; Swahili for **patrol**. That is what it does. It never stops moving through your codebase.
 
-Doria is an AI-powered supply chain security agent that sits in your CI/CD pipeline and acts as a drop-in replacement for your package manager. It scans every dependency at install time, reasons about risk in context, catches AI-hallucinated package names, and autonomously fixes critical threats before they ever touch your codebase.
+Doria is an AI powered supply chain security agent that sits in your CI/CD pipeline and acts as a drop-in replacement for your package manager. It scans every dependency at install time, reasons about risk in context, catches AI-hallucinated package names, and autonomously fixes critical threats before they ever touch your codebase.
 
 **Snyk tells you. Dependabot tells you. Doria fixes it.**
 
@@ -106,28 +106,15 @@ cargo run -p doria-core --bin scan_test -- ../test-env/node_modules/nanoid nanoi
 
 ---
 
-## The Name
-
-Doria is Swahili for patrol. The team is South African. Leading with a Swahili name is a cultural statement as well as a product statement. Doria does not just detect — it patrols. It is always moving through your dependency graph, always on the beat, always watching.
-
----
-
-## Built For
-
-ITWeb Security Summit Hackathon 2026 — *Hackers Assemble* (10th anniversary)
-Sandton Convention Centre, 2-3 June 2026
-
----
-
 ## Team
 
 Built in Johannesburg, South Africa.
 
 | Member | Role |
 |--------|------|
-| Elvis | Founder — full stack, ML/AI, orchestration |
-| Teammate 2 | Co-founder — Rust engine, data pipeline |
-| Teammate 3 | Co-founder — frontend, dashboard, demo polish |
+| Elvis | Rust Engine |
+| Mphele | ML Engine |
+| Aphiwe | Dashboard |
 
 ---
 
@@ -145,5 +132,3 @@ Built in Johannesburg, South Africa.
 | Autonomous remediation | pending |
 
 ---
-
-*Doria means patrol. Build it like a company. Present it like a company.*
