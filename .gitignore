@@ -1,0 +1,39 @@
+# Rust
+doria-cli/target/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+.env
+
+# Node
+test-env/node_modules/
+doria-web/node_modules/
+doria-engine/node_modules/
+*.log
+.next/
+
+# ML
+*.pkl
+*.joblib
+*.model
+data/raw/
+data/processed/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Demo
+demo/recordings/
