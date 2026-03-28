@@ -1,0 +1,13 @@
+venv/
+
+data/safe_packages/
+data/poisoned_packages/
+
+training_data.csv
+
+__pycache__/
+*.pyc
+
+.vscode/
+
+.DS_Store
