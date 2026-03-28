@@ -1,33 +1,12 @@
-use std::fs;
-use doria_core::detect::shell::ShellDetector;
-use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
-use swc_core::common::{SourceMap, FileName};
-use swc_core::ecma::visit::Visit;
-use std::rc::Rc;
+use doria_core::scanner::scan_package;
+use doria_types::Ecosystem;
 
 fn main() {
-    let path = std::env::args().nth(1).expect("pass a js file as argument");
-    let code = fs::read_to_string(&path).expect("could not read file");
+    let path = std::env::args().nth(1).expect("usage: scan_test <package_dir>");
+    let name = std::env::args().nth(2).unwrap_or("unknown".to_string());
+    let version = std::env::args().nth(3).unwrap_or("0.0.0".to_string());
 
-    let cm = Rc::new(SourceMap::default());
-    let fm = cm.new_source_file(FileName::Anon, code);
-    let lexer = Lexer::new(
-        Syntax::Es(Default::default()),
-        Default::default(),
-        StringInput::from(&*fm),
-        None,
-    );
-    let mut parser = Parser::new_from(lexer);
-    let module = parser.parse_module().expect("failed to parse");
-
-    let mut detector = ShellDetector::new(
-        path.clone(),
-        "test-pkg".to_string(),
-        "1.0.0".to_string(),
-    );
-    detector.visit_module(&module);
-
-    // ANSI color codes
+    // ANSI colors
     const RED: &str = "\x1b[31m";
     const GREEN: &str = "\x1b[32m";
     const YELLOW: &str = "\x1b[33m";
@@ -35,21 +14,34 @@ fn main() {
     const BOLD: &str = "\x1b[1m";
     const RESET: &str = "\x1b[0m";
 
-    if detector.findings.is_empty() {
-        println!("{GREEN}{BOLD}CLEAN{RESET} — no findings detected in {path}");
+    let result = scan_package(&path, &name, &version, Ecosystem::Npm);
+
+    println!();
+    println!("{BOLD}DORIA SCAN RESULT{RESET}");
+    println!("{CYAN}package:{RESET}   {}@{}", result.package_name, result.package_version);
+    println!("{CYAN}status:{RESET}    {:?}", result.status);
+    println!("{CYAN}risk:{RESET}      {:.2}", result.risk_score);
+    println!("{CYAN}scanned:{RESET}   {}", result.scanned_at);
+    println!();
+
+    if result.findings.is_empty() {
+        println!("{GREEN}{BOLD}CLEAN{RESET} — no findings detected");
     } else {
         println!(
-            "{RED}{BOLD}FINDINGS{RESET} — {} issue(s) detected in {CYAN}{path}{RESET}\n",
-            detector.findings.len()
+            "{RED}{BOLD}FINDINGS{RESET} — {} issue(s) detected\n",
+            result.findings.len()
         );
-        for f in &detector.findings {
+        for f in &result.findings {
             println!(
-                "  {BOLD}[{:?}]{RESET} {YELLOW}{:?}{RESET}",
-                f.severity, f.kind
+                "  {BOLD}[{:?}]{RESET} {YELLOW}{:?}{RESET} — confidence: {:.2}",
+                f.severity, f.kind, f.confidence
             );
             println!("  {}", f.description);
             if let Some(loc) = &f.location {
                 println!("  {CYAN}{}:{}{RESET}", loc.file, loc.line);
+            }
+            if let Some(evidence) = &f.evidence {
+                println!("  evidence: {}", evidence);
             }
             println!();
         }
