@@ -111,10 +111,11 @@ mod tests {
     use super::*;
     use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
     use swc_core::common::{SourceMap, FileName};
-    use std::sync::Arc;
+    // use std::sync::Arc;
+    use std::rc::Rc;
 
     fn detect_in_js(code: &str) -> Vec<Finding> {
-        let cm = Arc::new(SourceMap::default());
+        let cm = Rc::new(SourceMap::default());
         let fm = cm.new_source_file(FileName::Anon, code.to_string());
         let lexer = Lexer::new(
             Syntax::Es(Default::default()),
