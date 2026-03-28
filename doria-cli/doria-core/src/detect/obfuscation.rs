@@ -74,92 +74,89 @@ impl ObfuscationDetector {
         let valid_chars = s.chars().all(|c| {
             c.is_ascii_alphanumeric() || c == '+' || c == '/' || c == '='
         });
-        valid_chars && s.len() % 4 == 0
+        valid_chars && s.len().is_multiple_of(4)
     }
 }
 
 impl Visit for ObfuscationDetector {
     fn visit_call_expr(&mut self, call: &CallExpr) {
-        match &call.callee {
-            Callee::Expr(expr) => {
-                match expr.as_ref() {
-                    Expr::Member(member) => {
-                        // Detects: Buffer.from('...', 'base64')
-                        if let Expr::Ident(obj) = member.obj.as_ref() {
-                            if let MemberProp::Ident(prop) = &member.prop {
-                                if obj.sym.as_ref() == "Buffer"
-                                    && prop.sym.as_ref() == "from"
-                                {
-                                    // Check if second argument is a base64 encoding
-                                    if let Some(encoding_arg) = call.args.get(1) {
-                                        if let Expr::Lit(Lit::Str(s)) = encoding_arg.expr.as_ref() {
-                                            if BUFFER_ENCODINGS.contains(&s.value.as_ref()) {
-                                                self.seen_base64_decode = true;
+        if let Callee::Expr(expr) = &call.callee {
+            match expr.as_ref() {
+                Expr::Member(member) => {
+                    // Detects: Buffer.from('...', 'base64')
+                    if let Expr::Ident(obj) = member.obj.as_ref() {
+                        if let MemberProp::Ident(prop) = &member.prop {
+                            if obj.sym.as_ref() == "Buffer"
+                                && prop.sym.as_ref() == "from"
+                            {
+                                // Check if second argument is a base64 encoding
+                                if let Some(encoding_arg) = call.args.get(1) {
+                                    if let Expr::Lit(Lit::Str(s)) = encoding_arg.expr.as_ref() {
+                                        if BUFFER_ENCODINGS.contains(&s.value.as_ref()) {
+                                            self.seen_base64_decode = true;
 
-                                                // Grab the encoded payload as evidence
-                                                let evidence = call.args.first().and_then(|a| {
-                                                    if let Expr::Lit(Lit::Str(s)) = a.expr.as_ref() {
-                                                        Some(s.value.to_string())
-                                                    } else {
-                                                        None
-                                                    }
-                                                });
+                                            // Grab the encoded payload as evidence
+                                            let evidence = call.args.first().and_then(|a| {
+                                                if let Expr::Lit(Lit::Str(s)) = a.expr.as_ref() {
+                                                    Some(s.value.to_string())
+                                                } else {
+                                                    None
+                                                }
+                                            });
 
-                                                self.add_finding(
-                                                    call.span.lo.0,
-                                                    "Buffer.from() with base64 encoding detected — possible payload decoding".to_string(),
-                                                    evidence,
-                                                    0.75,
-                                                );
-                                            }
+                                            self.add_finding(
+                                                call.span.lo.0,
+                                                "Buffer.from() with base64 encoding detected — possible payload decoding".to_string(),
+                                                evidence,
+                                                0.75,
+                                            );
                                         }
                                     }
                                 }
                             }
                         }
                     }
-
-                    Expr::Ident(ident) => {
-                        let name = ident.sym.as_ref();
-
-                        // Detects: eval(...)
-                        if EVAL_PATTERNS.contains(&name) {
-                            // eval with a non-literal argument is suspicious
-                            // eval('hardcoded string') is less suspicious than eval(someVar)
-                            let is_dynamic = call.args.first().map_or(false, |arg| {
-                                !matches!(arg.expr.as_ref(), Expr::Lit(_))
-                            });
-
-                            let confidence = if is_dynamic { 0.95 } else { 0.60 };
-                            let description = if is_dynamic {
-                                "eval() called with dynamic argument — high risk code execution".to_string()
-                            } else {
-                                "eval() called with literal argument — low risk but flagged".to_string()
-                            };
-
-                            self.add_finding(
-                                call.span.lo.0,
-                                description,
-                                None,
-                                confidence,
-                            );
-                        }
-
-                        // Detects: atob('...') — browser base64 decode
-                        if BASE64_PATTERNS.contains(&name) {
-                            self.seen_base64_decode = true;
-                            self.add_finding(
-                                call.span.lo.0,
-                                format!("{}() base64 decode detected", name),
-                                None,
-                                0.70,
-                            );
-                        }
-                    }
-                    _ => {}
                 }
+
+                Expr::Ident(ident) => {
+                    let name = ident.sym.as_ref();
+
+                    // Detects: eval(...)
+                    if EVAL_PATTERNS.contains(&name) {
+                        // eval with a non-literal argument is suspicious
+                        // eval('hardcoded string') is less suspicious than eval(someVar)
+                        let is_dynamic = call.args.first().is_some_and(|arg| {
+                            !matches!(arg.expr.as_ref(), Expr::Lit(_))
+                        });
+
+                        let confidence = if is_dynamic { 0.95 } else { 0.60 };
+                        let description = if is_dynamic {
+                            "eval() called with dynamic argument — high risk code execution".to_string()
+                        } else {
+                            "eval() called with literal argument — low risk but flagged".to_string()
+                        };
+
+                        self.add_finding(
+                            call.span.lo.0,
+                            description,
+                            None,
+                            confidence,
+                        );
+                    }
+
+                    // Detects: atob('...') — browser base64 decode
+                    if BASE64_PATTERNS.contains(&name) {
+                        self.seen_base64_decode = true;
+                        self.add_finding(
+                            call.span.lo.0,
+                            format!("{}() base64 decode detected", name),
+                            None,
+                            0.70,
+                        );
+                    }
+                }
+                _ => {}
             }
-            _ => {}
         }
 
         call.visit_children_with(self);
@@ -187,12 +184,12 @@ mod tests {
     use super::*;
     use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
     use swc_core::common::{SourceMap, FileName};
-    use swc_core::ecma::visit::VisitWith;
-    use std::sync::Arc;
+    // use swc_core::ecma::visit::VisitWith;
+    use std::rc::Rc;
 
     fn detect_in_js(code: &str) -> Vec<Finding> {
-        let cm = Arc::new(SourceMap::default());
-        let fm = cm.new_source_file(FileName::Anon.into(), code.to_string());
+        let cm = Rc::new(SourceMap::default());
+        let fm = cm.new_source_file(FileName::Anon, code.to_string());
         let lexer = Lexer::new(
             Syntax::Es(Default::default()),
             Default::default(),
