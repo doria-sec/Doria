@@ -1,10 +1,8 @@
 # DORIA
 
-> *Doria* ; Swahili for **patrol**. That is what it does. It never stops moving through your codebase.
+> *Doria*; Swahili for **patrol**.
 
-Doria is an AI powered supply chain security agent that sits in your CI/CD pipeline and acts as a drop-in replacement for your package manager. It scans every dependency at install time, reasons about risk in context, catches AI-hallucinated package names, and autonomously fixes critical threats before they ever touch your codebase.
-
-**Snyk tells you. Dependabot tells you. Doria fixes it.**
+Doria is an AI powered supply chain security agent that sits in your CI/CD pipeline and acts as a drop-in replacement for your package manager. It scans every dependency at install time, reasons about risk in context, catches AI hallucinated package names, and autonomously fixes critical threats before they ever touch your codebase.
 
 ---
 
@@ -102,13 +100,13 @@ cargo run -p doria-core --bin scan_test -- ../test-env/node_modules/<package> <n
 Example:
 ```bash
 cargo run -p doria-core --bin scan_test -- ../test-env/node_modules/nanoid nanoid 5.0.0
+cargo run -p doria-core --bin scan_test -- ../test-env/soph-mal sophisticated-mal 2.1.4
+cargo run -p doria-core --bin scan_test -- ../test-env/obfuscated-mal obfuscated-mal 1.0.3
 ```
 
 ---
 
 ## Team
-
-Built in Johannesburg, South Africa.
 
 | Member | Role |
 |--------|------|
@@ -132,3 +130,4 @@ Built in Johannesburg, South Africa.
 | Autonomous remediation | pending |
 
 ---
+
