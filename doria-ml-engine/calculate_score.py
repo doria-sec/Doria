@@ -56,9 +56,38 @@ def package_score(json_file:str):
             has_repository =1
     else:
         has_repository=0
+    
 
-    return [maintainer_count, version_count,has_repository,age_in_days,label ]
+    readme = package_data.get("readme", "")
+    if readme:
+        if "ERROR" in readme:
+            has_readme = 0
+        else:
+            has_readme =1
+    else:
+        has_readme = 0
+    
+    time_last_maintained = package_data.get("time", {}).get("modified", "")   
+    try:
+        target_date_maintain = datetime.fromisoformat(time_last_maintained.replace("Z", "+00:00"))
 
+        now = datetime.now(timezone.utc)
+
+        maintain_diff = now - target_date_maintain
+        maintain_age_in_days = maintain_diff.days
+    except ValueError:
+        maintain_age_in_days = 0
+    
+
+    num_of_users = len(package_data.get("users", {}))
+
+    if age_in_days >365 and maintain_age_in_days<14 and maintainer_count ==1:
+        maintainer_is_new = 1
+    else:
+        maintainer_is_new = 0
+
+
+    return [age_in_days,maintain_age_in_days,num_of_users,maintainer_count,maintainer_is_new,has_readme,version_count,has_repository,label]
 
 
 

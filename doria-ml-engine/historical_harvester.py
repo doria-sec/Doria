@@ -17,6 +17,14 @@ except FileNotFoundError:
 target_folder = "data/poisoned_packages"
 
 def fetch_historical_metadata(package_name: str):
+    
+    safe_filename = package_name.replace("/", "_")
+    target_file = os.path.join(target_folder, safe_filename + ".json")
+
+    if os.path.exists(target_file):
+        print(f"Already exists, skipping: {package_name}")
+        return
+
     package_url = "https://registry.npmjs.org/" + package_name
     response = requests.get(package_url)
 
@@ -26,18 +34,13 @@ def fetch_historical_metadata(package_name: str):
 
     if response.status_code == 200:
         package_data = response.json()
-
         description = package_data.get("description", "")
         
-        if "security holding package" in description:
+        if description == "security holding package":
             print(f"Discarded: {package_name} (NPM placeholder replaced the malware)")
             return
         
         print(f"SUCCESS! Golden Record Found: {package_name}")
-        
-        safe_filename = package_name.replace("/", "_")
-        target_file = os.path.join(target_folder, safe_filename + ".json")
-
         with open(target_file, "w") as file:
             json.dump(package_data, file, indent=4)
             

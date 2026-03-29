@@ -10,24 +10,25 @@ with open("top_packages.txt", "r") as file:
 
 def fetch_package_metadata(package_name: str, target_folder: str):
     
+    safe_filename = package_name.replace("/", "_")
+    target_file = os.path.join(target_folder, safe_filename + ".json")
+
+    if os.path.exists(target_file):
+        print(f"Already exists, skipping: {package_name}")
+        return
+
     package_url = "https://registry.npmjs.org/" + package_name
     response = requests.get(package_url)
 
     if response.status_code == 200:
         package_data = response.json()
 
-       
         description = package_data.get("description", "")
-        
         if description == "security holding package":
             print(f"Skipped: {package_name} (NPM Security Holding)")
             return
 
         print(f"Success: {package_name}")
-        
-        safe_filename = package_name.replace("/", "_")
-        target_file = os.path.join(target_folder, safe_filename + ".json")
-
         with open(target_file, "w") as file:
             json.dump(package_data, file, indent=4)
 
