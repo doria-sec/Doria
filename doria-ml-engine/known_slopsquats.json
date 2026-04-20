@@ -1,0 +1,86 @@
+{
+  "react-codeshift": {
+    "source": "Aikido Security",
+    "pattern": "conflation"
+  },
+  "unused-imports": {
+    "source": "Aikido Security",
+    "pattern": "fabrication"
+  },
+  "arangodb": {
+    "source": "Vulcan Cyber",
+    "pattern": "fabrication"
+  },
+  "huggingface-cli": {
+    "source": "Lasso Security",
+    "pattern": "fabrication"
+  },
+  "express-mongoose": {
+    "source": "Aikido Security",
+    "pattern": "conflation"
+  },
+  "aws-helper-sdk": {
+    "source": "Snyk",
+    "pattern": "fabrication"
+  },
+  "fastapi-middleware": {
+    "source": "Snyk",
+    "pattern": "fabrication"
+  },
+  "crypto-validator": {
+    "source": "Snyk",
+    "pattern": "fabrication"
+  },
+  "auth-helper-pro": {
+    "source": "Snyk",
+    "pattern": "fabrication"
+  },
+  "secure-jwt-validator": {
+    "source": "Snyk",
+    "pattern": "fabrication"
+  },
+  "@utils/string-helper": {
+    "source": "Snyk",
+    "pattern": "fabrication"
+  },
+  "pandas-advanced-analytics": {
+    "source": "Snyk",
+    "pattern": "fabrication"
+  },
+  "reqeusts": {
+    "source": "Snyk",
+    "pattern": "typo"
+  },
+  "numppy": {
+    "source": "Snyk",
+    "pattern": "typo"
+  },
+  "expresss": {
+    "source": "Kusari",
+    "pattern": "typo"
+  },
+  "momment": {
+    "source": "Kusari",
+    "pattern": "typo"
+  },
+  "calender": {
+    "source": "Kusari",
+    "pattern": "typo"
+  },
+  "seperator": {
+    "source": "Kusari",
+    "pattern": "typo"
+  },
+  "yaml_parser": {
+    "source": "Andrew Nesbitt",
+    "pattern": "fabrication"
+  },
+  "securehashlib": {
+    "source": "Importing Phantoms",
+    "pattern": "fabrication"
+  },
+  "fastjson": {
+    "source": "FOSSA",
+    "pattern": "fabrication"
+  }
+}
