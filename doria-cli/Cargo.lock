@@ -200,6 +200,11 @@ dependencies = [
 [[package]]
 name = "doria-scanner"
 version = "0.1.0"
+dependencies = [
+ "doria-core",
+ "doria-types",
+ "serde_json",
+]
 
 [[package]]
 name = "doria-types"

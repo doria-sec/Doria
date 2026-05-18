@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+doria-types = { path = "../doria-types" }
+doria-core = { path = "../doria-core" }
+serde_json = "=1.0.110"
