@@ -121,9 +121,9 @@ cargo run -p doria-core --bin scan_test -- ../test-env/obfuscated-mal obfuscated
 | Component | Status |
 |-----------|--------|
 | Rust AST engine | done |
-| ML scoring model | pending |
+| ML scoring model | done |
 | LLM reasoning layer | pending |
-| Slopsquatting detector | pending |
+| Slopsquatting detector | done |
 | React dashboard | pending |
 | Landing page | pending |
 | CLI binary | pending |
