@@ -6,3 +6,7 @@ edition = "2024"
 [dependencies]
 doria-core = { path = "../doria-core" }
 doria-types = { path = "../doria-types" }
+
+[[bin]]
+name = "doria"
+path = "src/main.rs"
