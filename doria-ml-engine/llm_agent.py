@@ -93,6 +93,7 @@ def generate_pr_report(scan_result_json: str):
     3. Populate the 'Nomenclature Risk' section using the Model 2 metrics (e.g., mention typosquatting or slopsquatting patterns if confidence is high).
     4. Render the output using this exact template skeleton:
     
+    
     {MD_TEMPLATE}
     """
 
