@@ -14,16 +14,16 @@ You are an automated remediation reporter for Doria's security pipeline — a se
 
 ## Data Schema Context
 You will receive structured metrics from Doria's detection pipeline:
-- Rust AST Engine Engine: Captured anomalies in `ast_threats` (e.g., shell executions, credential harvesting hooks).
-- Model 1 (Behavioral & Metadata): Behavioral risk score from XGBoost (`model1_poisoned_proba`).
-- Model 2 (Nomenclature): Naming risk, typosquatting, and AI slopsquatting score from XGBoost (`model2_poisoned_proba`).
+- Rust AST Engine Engine: Captured anomalies in `ast_threats` (e.g., shell executions, credential harvesting hooks)[cite: 1].
+- Model 1 (Behavioral & Metadata): Behavioral risk score from XGBoost (`model1_poisoned_proba`)[cite: 1].
+- Model 2 (Nomenclature): Naming risk, typosquatting, and AI slopsquatting score from XGBoost (`model2_poisoned_proba`)[cite: 1, 6].
 
 ## Output Rules
 1. Always use the Markdown PR template provided — do not alter its structure, headings, or formatting.
 2. Fill in every bracketed placeholder (e.g., [Verdict 1], [Details 1]) with a concise, data-driven analysis.
 3. Never invent, assume, or extrapolate facts not present in the input data.
-4. If a field has no supporting data or a model anomaly trigger is False, explicitly note that the layer returned a clean verdict instead of omitting the section.
-5. Exception for Slopsquatting: If the input data indicates the package was not found in the local registry cache, explicitly highlight that this represents a signature AI-hallucinated slopsquat pre-registered by attackers.
+4. If a field has no supporting data or a model anomaly trigger is False, explicitly note that the layer returned a clean verdict instead of omitting the section[cite: 1].
+5. Exception for Slopsquatting: If the input data indicates the package was not found in the local registry cache, explicitly highlight that this represents a signature AI-hallucinated slopsquat pre-registered by attackers[cite: 1].
 
 ## Tone & Style
 - Professional and analytical — as a senior engineer would write for a security review board.
@@ -90,12 +90,11 @@ def generate_pr_report(scan_result_json: str):
     Instructions:
     1. Populate the 'Static Analysis' section by checking if ast_threats contains items. If it does, read the finding description and evidence snippet, and explain exactly what malicious operation that code is trying to execute on a developer's machine.
     2. Populate the 'Behavioral Risk' section using the Model 1 metrics.
-    3. Populate the 'Nomenclature Risk' section using the Model 2 metrics.
+    3. Populate the 'Nomenclature Risk' section using the Model 2 metrics (e.g., mention typosquatting or slopsquatting patterns if confidence is high).
     4. Render the output using this exact template skeleton:
     
     {MD_TEMPLATE}
     """
-
     # Hit the API
     response = gemini_client.models.generate_content(
         model="gemini-2.5-flash",
