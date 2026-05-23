@@ -62,5 +62,47 @@ dotenv.load_dotenv()
 
 gemini_client = google.genai.Client()
 
-def generate_pr_report(scan_result_json):
-    ...
+def generate_pr_report(scan_result_json: str):
+    try:
+        data = json.loads(scan_result_json)
+    except Exception as e:
+        print(f"ERROR: Malformed input JSON. Cannot generate report. Details: {e}")
+        return
+
+    package_name = data.get("package_name", "Unknown Package")
+    threat_details = data.get("threat_details", {})
+    
+    # Extract the precise model metrics and AST arrays from scanner.py
+    m1_poison_proba = threat_details.get("model1_poisoned_proba", 0.0)
+    m2_poison_proba = threat_details.get("model2_poisoned_proba", 0.0)
+    m1_trigger = threat_details.get("model_1_trigger", False)
+    m2_trigger = threat_details.get("model_2_trigger", False)
+    ast_threats = threat_details.get("ast_threats", [])
+    
+    # Assemble the explicit runtime state payload for the LLM
+    context_payload = f"""
+    Analyze this raw data report for the package '{package_name}':
+    
+    - Model 1 (Behavioral) Poison Probability: {m1_poison_proba}% (Triggered Anomaly: {m1_trigger})
+    - Model 2 (Naming/NLP) Poison Probability: {m2_poison_proba}% (Triggered Anomaly: {m2_trigger})
+    - Rust AST Engine Found Issues: {ast_threats}
+    
+    Instructions:
+    1. Populate the 'Static Analysis' section by checking if ast_threats contains items. If it does, read the finding description and evidence snippet, and explain exactly what malicious operation that code is trying to execute on a developer's machine.
+    2. Populate the 'Behavioral Risk' section using the Model 1 metrics.
+    3. Populate the 'Nomenclature Risk' section using the Model 2 metrics (e.g., mention typosquatting or slopsquatting patterns if confidence is high).
+    4. Render the output using this exact template skeleton:
+    
+    {MD_TEMPLATE}
+    """
+
+    # Trigger the Gemini client using the high-performance flash variant
+    response = gemini_client.models.generate_content(
+        model="gemini-1.5-flash",
+        contents=context_payload,
+        config={"system_instruction": SYSTEM_INSTRUCTION}
+    )
+    
+    # Temporarily print the text response to verify layout generation
+    print(response.text)
+    return response.text
