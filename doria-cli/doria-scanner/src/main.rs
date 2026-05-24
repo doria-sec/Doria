@@ -1,6 +1,6 @@
-use std::io::{self, BufRead, Write};
+use std::io::{self,  Write};
 use doria_core::scanner::scan_package;
-use doria_types::{Ecosystem, ScanResult};
+use doria_types::{Ecosystem};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
