@@ -34,6 +34,6 @@ threadpoolctl==3.6.0
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2025.3
-urllib3==2.6.3
+urllib3==2.7.0
 websockets==16.0
 xgboost==3.2.0
