@@ -4,7 +4,7 @@
 
 Doria is an AI powered supply chain security agent that sits in your CI/CD pipeline and acts as a drop-in replacement for your package manager. It scans every dependency at install time, reasons about risk in context, catches AI hallucinated package names, and autonomously fixes critical threats before they ever touch your codebase.
 
----
+--
 
 ## The Problem
 
