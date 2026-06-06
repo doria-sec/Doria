@@ -6,6 +6,10 @@ Doria is an AI powered supply chain security agent that sits in your CI/CD pipel
 
 ---
 
+🏆 **Winner — ITWeb Security Summit Hackathon 2026 (#SS26HACK)** · 1st place out of 850+ participants · [Coverage on ITWeb](https://www.itweb.co.za/article/team-doria-wins-sshack26/4r1ly7R95KPvpmda)
+
+---
+
 
 ## The Problem
 
