@@ -1,6 +1,6 @@
-use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
+use std::process::{Command, Stdio};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -19,7 +19,10 @@ fn main() {
                 std::process::exit(1);
             }
             let package = &args[2];
-            println!("\x1b[36m[*] Doria is scanning '{}' before install...\x1b[0m", package);
+            println!(
+                "\x1b[36m[*] Doria is scanning '{}' before install...\x1b[0m",
+                package
+            );
             handle_install(package);
         }
         "scan" => {
@@ -72,7 +75,9 @@ fn handle_install(package: &str) {
                     print_threat_report(&report);
 
                     if report.is_safe {
-                        println!("\n\x1b[32m[+] Package is safe. Proceeding with install...\x1b[0m");
+                        println!(
+                            "\n\x1b[32m[+] Package is safe. Proceeding with install...\x1b[0m"
+                        );
                         // Actually install the package
                         let install = Command::new("npm")
                             .args(["install", package])
@@ -86,23 +91,30 @@ fn handle_install(package: &str) {
                             std::process::exit(1);
                         }
                     } else {
-                        println!("\n\x1b[1;31m[!] BLOCKED: Doria has blocked the installation of '{}'.\x1b[0m", package);
+                        println!(
+                            "\n\x1b[1;31m[!] BLOCKED: Doria has blocked the installation of '{}'.\x1b[0m",
+                            package
+                        );
                         println!("    Run with --force to override (not recommended).");
                         std::process::exit(1);
                     }
                 }
                 Err(e) => {
-                    eprintln!("\x1b[33m[!] ML engine failed: {}. Proceeding with caution...\x1b[0m", e);
+                    eprintln!(
+                        "\x1b[33m[!] ML engine failed: {}. Proceeding with caution...\x1b[0m",
+                        e
+                    );
                     // Fail open — allow install but warn
-                    let _ = Command::new("npm")
-                        .args(["install", package])
-                        .status();
+                    let _ = Command::new("npm").args(["install", package]).status();
                 }
             }
         }
         Ok(output) => {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            eprintln!("\x1b[33m[!] Could not fetch package info: {}\x1b[0m", stderr);
+            eprintln!(
+                "\x1b[33m[!] Could not fetch package info: {}\x1b[0m",
+                stderr
+            );
             eprintln!("    Package '{}' may not exist on npm.", package);
             eprintln!("\x1b[1;31m[!] SLOPSQUAT ALERT: This package may be AI-hallucinated!\x1b[0m");
             std::process::exit(1);
@@ -135,18 +147,21 @@ fn run_rust_scanner(package_dir: &str, package_name: &str, package_version: &str
         .output();
 
     match output {
-        Ok(out) if out.status.success() => {
-            String::from_utf8_lossy(&out.stdout).to_string()
-        }
+        Ok(out) if out.status.success() => String::from_utf8_lossy(&out.stdout).to_string(),
         Ok(out) => {
             let err = String::from_utf8_lossy(&out.stderr);
             eprintln!("\x1b[33m[!] Scanner warning: {}\x1b[0m", err);
             // Return empty findings JSON so the ML engine still runs
-            r#"{"package_name":"unknown","findings":[],"risk_score":0.0,"status":"partial"}"#.to_string()
+            r#"{"package_name":"unknown","findings":[],"risk_score":0.0,"status":"partial"}"#
+                .to_string()
         }
         Err(e) => {
-            eprintln!("\x1b[33m[!] Could not run doria-scanner: {}. Skipping AST scan.\x1b[0m", e);
-            r#"{"package_name":"unknown","findings":[],"risk_score":0.0,"status":"partial"}"#.to_string()
+            eprintln!(
+                "\x1b[33m[!] Could not run doria-scanner: {}. Skipping AST scan.\x1b[0m",
+                e
+            );
+            r#"{"package_name":"unknown","findings":[],"risk_score":0.0,"status":"partial"}"#
+                .to_string()
         }
     }
 }
@@ -208,15 +223,21 @@ fn parse_ml_report(json: &str) -> Result<ThreatReport, String> {
     // Manual JSON parsing — avoids adding serde_json dependency to the CLI crate
     // for a simple flat structure. We just look for key fields.
     let is_safe = json.contains("\"is_safe\": true") || json.contains("\"is_safe\":true");
-    let action = if json.contains("\"BLOCK\"") { "BLOCK".to_string() } else { "ALLOW".to_string() };
+    let action = if json.contains("\"BLOCK\"") {
+        "BLOCK".to_string()
+    } else {
+        "ALLOW".to_string()
+    };
 
     let package_name = extract_json_string(json, "package_name").unwrap_or("unknown".to_string());
     let error = extract_json_string(json, "error");
 
     let model1_poisoned = extract_json_float(json, "model1_poisoned_proba").unwrap_or(0.0);
     let model2_poisoned = extract_json_float(json, "model2_poisoned_proba").unwrap_or(0.0);
-    let model1_trigger = json.contains("\"model_1_trigger\": true") || json.contains("\"model_1_trigger\":true");
-    let model2_trigger = json.contains("\"model_2_trigger\": true") || json.contains("\"model_2_trigger\":true");
+    let model1_trigger =
+        json.contains("\"model_1_trigger\": true") || json.contains("\"model_1_trigger\":true");
+    let model2_trigger =
+        json.contains("\"model_2_trigger\": true") || json.contains("\"model_2_trigger\":true");
 
     // Count AST threats from the ast_threats array
     let ast_threat_count = json.matches("\"kind\"").count();
@@ -235,26 +256,54 @@ fn parse_ml_report(json: &str) -> Result<ThreatReport, String> {
 }
 
 fn print_threat_report(report: &ThreatReport) {
-    let action_color = if report.is_safe { "\x1b[32m" } else { "\x1b[1;31m" };
-    let ast_color = if report.ast_threat_count == 0 { "\x1b[32m" } else { "\x1b[33m" };
+    let action_color = if report.is_safe {
+        "\x1b[32m"
+    } else {
+        "\x1b[1;31m"
+    };
+    let ast_color = if report.ast_threat_count == 0 {
+        "\x1b[32m"
+    } else {
+        "\x1b[33m"
+    };
 
     println!();
     println!("\x1b[34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m");
     println!("\x1b[1m DORIA THREAT REPORT\x1b[0m");
     println!("\x1b[34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m");
     println!(" Package:    \x1b[36m{}\x1b[0m", report.package_name);
-    println!(" Decision:   {}", if report.is_safe { "\x1b[32mSAFE\x1b[0m" } else { "\x1b[1;31mTHREAT DETECTED\x1b[0m" });
+    println!(
+        " Decision:   {}",
+        if report.is_safe {
+            "\x1b[32mSAFE\x1b[0m"
+        } else {
+            "\x1b[1;31mTHREAT DETECTED\x1b[0m"
+        }
+    );
     println!(" Action:     {}{}\x1b[0m", action_color, report.action);
     println!();
-    println!(" ML Model 1 (Behavior):   {:.1}% threat probability  [{}]",
+    println!(
+        " ML Model 1 (Behavior):   {:.1}% threat probability  [{}]",
         report.model1_poisoned_proba,
-        if report.model1_trigger { "\x1b[1;31mTRIGGERED\x1b[0m" } else { "\x1b[32mclean\x1b[0m" }
+        if report.model1_trigger {
+            "\x1b[1;31mTRIGGERED\x1b[0m"
+        } else {
+            "\x1b[32mclean\x1b[0m"
+        }
     );
-    println!(" ML Model 2 (NLP/Name):   {:.1}% threat probability  [{}]",
+    println!(
+        " ML Model 2 (NLP/Name):   {:.1}% threat probability  [{}]",
         report.model2_poisoned_proba,
-        if report.model2_trigger { "\x1b[1;31mTRIGGERED\x1b[0m" } else { "\x1b[32mclean\x1b[0m" }
+        if report.model2_trigger {
+            "\x1b[1;31mTRIGGERED\x1b[0m"
+        } else {
+            "\x1b[32mclean\x1b[0m"
+        }
     );
-    println!(" AST Findings:            {}{}\x1b[0m issue(s) detected", ast_color, report.ast_threat_count);
+    println!(
+        " AST Findings:            {}{}\x1b[0m issue(s) detected",
+        ast_color, report.ast_threat_count
+    );
 
     if let Some(err) = &report.error {
         println!();
@@ -287,7 +336,9 @@ fn find_python_scanner() -> PathBuf {
         if candidate.exists() {
             return candidate;
         }
-        if !dir.pop() { break; }
+        if !dir.pop() {
+            break;
+        }
     }
     // Fallback: assume it's in the cwd
     PathBuf::from("doria-ml-engine/scanner.py")
