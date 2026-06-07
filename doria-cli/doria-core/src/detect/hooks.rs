@@ -1,30 +1,15 @@
+use doria_types::{Finding, FindingKind, Location, Severity};
 use swc_core::ecma::ast::*;
 use swc_core::ecma::visit::{Visit, VisitWith};
-use doria_types::{Finding, FindingKind, Severity, Location};
 
 /// Hook names in package.json scripts that execute at install time
-const INSTALL_HOOKS: &[&str] = &[
-    "preinstall",
-    "postinstall",
-    "install",
-    "prepare",
-    "prepack",
-];
+const INSTALL_HOOKS: &[&str] = &["preinstall", "postinstall", "install", "prepare", "prepack"];
 
 /// Dangerous commands that should never appear in install hooks
 const DANGEROUS_COMMANDS: &[&str] = &[
-    "curl",
-    "wget",
-    "bash",
-    "sh",
-    "python",
-    "python3",
-    "node -e",
-    "eval",
-    "chmod",
-    "nc ",     // netcat
-    "ncat",
-    "socat",
+    "curl", "wget", "bash", "sh", "python", "python3", "node -e", "eval", "chmod",
+    "nc ", // netcat
+    "ncat", "socat",
 ];
 
 pub struct HooksDetector {
@@ -75,10 +60,7 @@ impl HooksDetector {
             if script.contains(cmd) {
                 self.add_finding(
                     line,
-                    format!(
-                        "Dangerous command '{}' found in '{}' hook",
-                        cmd, hook_name
-                    ),
+                    format!("Dangerous command '{}' found in '{}' hook", cmd, hook_name),
                     Some(script.to_string()),
                     0.92,
                 );
@@ -107,11 +89,7 @@ impl Visit for HooksDetector {
             if INSTALL_HOOKS.contains(&key_name) {
                 // The value should be a string (the script command)
                 if let Expr::Lit(Lit::Str(script)) = prop.value.as_ref() {
-                    self.check_script_content(
-                        script.value.as_ref(),
-                        key_name,
-                        key.span.lo.0,
-                    );
+                    self.check_script_content(script.value.as_ref(), key_name, key.span.lo.0);
                 }
             }
         }
@@ -132,9 +110,7 @@ impl Visit for HooksDetector {
                                 if INSTALL_HOOKS.contains(&s.value.as_ref()) {
                                     // Second arg is the script
                                     if let Some(second) = call.args.get(1) {
-                                        if let Expr::Lit(Lit::Str(script)) =
-                                            second.expr.as_ref()
-                                        {
+                                        if let Expr::Lit(Lit::Str(script)) = second.expr.as_ref() {
                                             self.check_script_content(
                                                 script.value.as_ref(),
                                                 s.value.as_ref(),
@@ -157,9 +133,9 @@ impl Visit for HooksDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
-    use swc_core::common::{SourceMap, FileName};
     use std::rc::Rc;
+    use swc_core::common::{FileName, SourceMap};
+    use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
 
     fn detect_in_js(code: &str) -> Vec<Finding> {
         let cm = Rc::new(SourceMap::default());

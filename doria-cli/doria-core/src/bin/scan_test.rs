@@ -2,7 +2,9 @@ use doria_core::scanner::scan_package;
 use doria_types::Ecosystem;
 
 fn main() {
-    let path = std::env::args().nth(1).expect("usage: scan_test <package_dir>");
+    let path = std::env::args()
+        .nth(1)
+        .expect("usage: scan_test <package_dir>");
     let name = std::env::args().nth(2).unwrap_or("unknown".to_string());
     let version = std::env::args().nth(3).unwrap_or("0.0.0".to_string());
 
@@ -18,7 +20,10 @@ fn main() {
 
     println!();
     println!("{BOLD}DORIA SCAN RESULT{RESET}");
-    println!("{CYAN}package:{RESET}   {}@{}", result.package_name, result.package_version);
+    println!(
+        "{CYAN}package:{RESET}   {}@{}",
+        result.package_name, result.package_version
+    );
     println!("{CYAN}status:{RESET}    {:?}", result.status);
     println!("{CYAN}risk:{RESET}      {:.2}", result.risk_score);
     println!("{CYAN}scanned:{RESET}   {}", result.scanned_at);

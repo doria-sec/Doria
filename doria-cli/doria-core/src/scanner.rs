@@ -1,25 +1,20 @@
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 
-use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
-use swc_core::common::{SourceMap, FileName};
-use swc_core::ecma::visit::{Visit};
 use std::rc::Rc;
+use swc_core::common::{FileName, SourceMap};
+use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
+use swc_core::ecma::visit::Visit;
 
-use doria_types::{ScanResult, ScanStatus, Ecosystem, Finding};
-use crate::detect::shell::ShellDetector;
-use crate::detect::network::NetworkDetector;
-use crate::detect::obfuscation::ObfuscationDetector;
 use crate::detect::credentials::CredentialsDetector;
 use crate::detect::hooks::HooksDetector;
+use crate::detect::network::NetworkDetector;
+use crate::detect::obfuscation::ObfuscationDetector;
+use crate::detect::shell::ShellDetector;
+use doria_types::{Ecosystem, Finding, ScanResult, ScanStatus};
 
 /// Scan a single JS file and return all findings from all detectors
-fn scan_js_file(
-    path: &str,
-    code: &str,
-    package_name: &str,
-    package_version: &str,
-) -> Vec<Finding> {
+fn scan_js_file(path: &str, code: &str, package_name: &str, package_version: &str) -> Vec<Finding> {
     let cm = Rc::new(SourceMap::default());
     let fm = cm.new_source_file(FileName::Anon, code.to_string());
     let lexer = Lexer::new(
@@ -89,16 +84,19 @@ fn compute_risk_score(findings: &[Finding]) -> f32 {
         return 0.0;
     }
 
-    let max_score: f32 = findings.iter().map(|f| {
-        let severity_weight = match f.severity {
-            doria_types::Severity::Critical => 1.0,
-            doria_types::Severity::High => 0.75,
-            doria_types::Severity::Medium => 0.50,
-            doria_types::Severity::Low => 0.25,
-            doria_types::Severity::Info => 0.10,
-        };
-        severity_weight * f.confidence
-    }).fold(0.0_f32, f32::max);
+    let max_score: f32 = findings
+        .iter()
+        .map(|f| {
+            let severity_weight = match f.severity {
+                doria_types::Severity::Critical => 1.0,
+                doria_types::Severity::High => 0.75,
+                doria_types::Severity::Medium => 0.50,
+                doria_types::Severity::Low => 0.25,
+                doria_types::Severity::Info => 0.10,
+            };
+            severity_weight * f.confidence
+        })
+        .fold(0.0_f32, f32::max);
 
     max_score
 }
@@ -118,7 +116,10 @@ pub fn scan_package(
             package_version: package_version.to_string(),
             ecosystem,
             status: ScanStatus::Failed,
-            error: Some(format!("Package directory '{}' does not exist", package_dir)),
+            error: Some(format!(
+                "Package directory '{}' does not exist",
+                package_dir
+            )),
             risk_score: 0.0,
             findings: vec![],
             scanned_at: chrono::Utc::now().to_rfc3339(),
@@ -136,7 +137,8 @@ pub fn scan_package(
         let path = entry.path();
 
         // Only scan JS files for now
-        let is_js = path.extension()
+        let is_js = path
+            .extension()
             .map(|e| e == "js" || e == "mjs" || e == "cjs")
             .unwrap_or(false);
 
@@ -172,7 +174,7 @@ pub fn scan_package(
         error: None,
         risk_score,
         findings: all_findings,
-  
+
         scanned_at: chrono::Utc::now().to_rfc3339(),
     }
 }

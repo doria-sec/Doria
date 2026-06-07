@@ -1,7 +1,6 @@
+use doria_types::{Finding, FindingKind, Location, Severity};
 use swc_core::ecma::ast::*;
 use swc_core::ecma::visit::{Visit, VisitWith};
-use doria_types::{Finding, FindingKind, Severity, Location};
-
 
 /// Sensitive file paths that should never be read by a package
 const SENSITIVE_PATHS: &[&str] = &[
@@ -82,7 +81,10 @@ impl CredentialsDetector {
             if value.contains(path) {
                 self.add_finding(
                     line,
-                    format!("Sensitive file path '{}' referenced in string literal", path),
+                    format!(
+                        "Sensitive file path '{}' referenced in string literal",
+                        path
+                    ),
                     Some(value.to_string()),
                     0.90,
                 );
@@ -124,10 +126,7 @@ impl Visit for CredentialsDetector {
                 if let MemberProp::Ident(prop) = &inner.prop {
                     if obj.sym.as_ref() == "process" && prop.sym.as_ref() == "env" {
                         if let MemberProp::Ident(env_var) = &member.prop {
-                            self.check_sensitive_env(
-                                env_var.sym.as_ref(),
-                                member.span.lo.0,
-                            );
+                            self.check_sensitive_env(env_var.sym.as_ref(), member.span.lo.0);
                         }
                     }
                 }
@@ -141,10 +140,9 @@ impl Visit for CredentialsDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
-    use swc_core::common::{SourceMap, FileName};
     use std::rc::Rc;
-
+    use swc_core::common::{FileName, SourceMap};
+    use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
 
     fn detect_in_js(code: &str) -> Vec<Finding> {
         let cm = Rc::new(SourceMap::default());
