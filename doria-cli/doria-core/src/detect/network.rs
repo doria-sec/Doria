@@ -1,29 +1,14 @@
+use doria_types::{Finding, FindingKind, Location, Severity};
 use swc_core::ecma::ast::*;
 use swc_core::ecma::visit::{Visit, VisitWith};
-use doria_types::{Finding, FindingKind, Severity, Location};
 
 /// Function names that indicate network activity
 const NETWORK_FUNCTIONS: &[&str] = &[
-    "fetch",
-    "axios",
-    "get",
-    "post",
-    "put",
-    "delete",
-    "request",
-    "connect",
+    "fetch", "axios", "get", "post", "put", "delete", "request", "connect",
 ];
 
 /// Objects that own network methods
-const NETWORK_OBJECTS: &[&str] = &[
-    "http",
-    "https",
-    "axios",
-    "net",
-    "tls",
-    "dns",
-    "urllib",
-];
+const NETWORK_OBJECTS: &[&str] = &["http", "https", "axios", "net", "tls", "dns", "urllib"];
 
 /// Suspicious URL patterns — these appearing in a package install script is a red flag
 const SUSPICIOUS_URL_PATTERNS: &[&str] = &[
@@ -85,7 +70,10 @@ impl NetworkDetector {
                 self.add_finding(
                     line,
                     0,
-                    format!("Suspicious URL pattern '{}' detected in string literal", pattern),
+                    format!(
+                        "Suspicious URL pattern '{}' detected in string literal",
+                        pattern
+                    ),
                     Some(value.to_string()),
                     0.90,
                 );
@@ -166,8 +154,8 @@ impl Visit for NetworkDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use swc_core::common::{FileName, SourceMap};
     use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
-    use swc_core::common::{SourceMap, FileName};
     // use swc_core::ecma::visit::VisitWith;
     // use std::sync::Arc;
 

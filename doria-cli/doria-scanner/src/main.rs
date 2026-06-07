@@ -1,12 +1,14 @@
-use std::io::{self,  Write};
 use doria_core::scanner::scan_package;
-use doria_types::{Ecosystem};
+use doria_types::Ecosystem;
+use std::io::{self, Write};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
 
     if args.len() < 4 {
-        eprintln!("usage: doria-scanner <package_dir> <package_name> <package_version> <ecosystem>");
+        eprintln!(
+            "usage: doria-scanner <package_dir> <package_name> <package_version> <ecosystem>"
+        );
         std::process::exit(1);
     }
 

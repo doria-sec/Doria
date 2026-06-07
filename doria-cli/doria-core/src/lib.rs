@@ -1,2 +1,2 @@
-pub mod scanner;
 pub mod detect;
+pub mod scanner;

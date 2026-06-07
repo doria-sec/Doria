@@ -1,6 +1,6 @@
+use doria_types::{Finding, FindingKind, Location, Severity};
 use swc_core::ecma::ast::*;
 use swc_core::ecma::visit::{Visit, VisitWith};
-use doria_types::{Finding, FindingKind, Severity, Location};
 
 /// Patterns that indicate shell execution
 const SHELL_PATTERNS: &[&str] = &[
@@ -14,10 +14,7 @@ const SHELL_PATTERNS: &[&str] = &[
 ];
 
 /// The object that owns these methods
-const SHELL_OBJECTS: &[&str] = &[
-    "child_process",
-    "childProcess",
-];
+const SHELL_OBJECTS: &[&str] = &["child_process", "childProcess"];
 
 pub struct ShellDetector {
     pub findings: Vec<Finding>,
@@ -36,7 +33,13 @@ impl ShellDetector {
         }
     }
 
-    fn add_finding(&mut self, line: u32, column: u32, description: String, evidence: Option<String>) {
+    fn add_finding(
+        &mut self,
+        line: u32,
+        column: u32,
+        description: String,
+        evidence: Option<String>,
+    ) {
         self.findings.push(Finding {
             id: format!("doria-shell-{:03}", self.findings.len() + 1),
             kind: FindingKind::ShellExecution,
@@ -109,8 +112,8 @@ impl Visit for ShellDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use swc_core::common::{FileName, SourceMap};
     use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
-    use swc_core::common::{SourceMap, FileName};
     // use std::sync::Arc;
     use std::rc::Rc;
 

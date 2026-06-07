@@ -1,25 +1,15 @@
+use doria_types::{Finding, FindingKind, Location, Severity};
 use swc_core::ecma::ast::*;
 use swc_core::ecma::visit::{Visit, VisitWith};
-use doria_types::{Finding, FindingKind, Severity, Location};
 
 /// Known obfuscation/dynamic execution functions
-const EVAL_PATTERNS: &[&str] = &[
-    "eval",
-    "Function",
-];
+const EVAL_PATTERNS: &[&str] = &["eval", "Function"];
 
 /// Known base64 decode indicators
-const BASE64_PATTERNS: &[&str] = &[
-    "atob",
-    "fromBase64",
-];
+const BASE64_PATTERNS: &[&str] = &["atob", "fromBase64"];
 
 /// Buffer methods used for base64 decoding in Node.js
-const BUFFER_ENCODINGS: &[&str] = &[
-    "base64",
-    "base64url",
-    "hex",
-];
+const BUFFER_ENCODINGS: &[&str] = &["base64", "base64url", "hex"];
 
 pub struct ObfuscationDetector {
     pub findings: Vec<Finding>,
@@ -71,9 +61,9 @@ impl ObfuscationDetector {
         if s.len() < 16 {
             return false;
         }
-        let valid_chars = s.chars().all(|c| {
-            c.is_ascii_alphanumeric() || c == '+' || c == '/' || c == '='
-        });
+        let valid_chars = s
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '/' || c == '=');
         valid_chars && s.len().is_multiple_of(4)
     }
 }
@@ -86,9 +76,7 @@ impl Visit for ObfuscationDetector {
                     // Detects: Buffer.from('...', 'base64')
                     if let Expr::Ident(obj) = member.obj.as_ref() {
                         if let MemberProp::Ident(prop) = &member.prop {
-                            if obj.sym.as_ref() == "Buffer"
-                                && prop.sym.as_ref() == "from"
-                            {
+                            if obj.sym.as_ref() == "Buffer" && prop.sym.as_ref() == "from" {
                                 // Check if second argument is a base64 encoding
                                 if let Some(encoding_arg) = call.args.get(1) {
                                     if let Expr::Lit(Lit::Str(s)) = encoding_arg.expr.as_ref() {
@@ -125,23 +113,20 @@ impl Visit for ObfuscationDetector {
                     if EVAL_PATTERNS.contains(&name) {
                         // eval with a non-literal argument is suspicious
                         // eval('hardcoded string') is less suspicious than eval(someVar)
-                        let is_dynamic = call.args.first().is_some_and(|arg| {
-                            !matches!(arg.expr.as_ref(), Expr::Lit(_))
-                        });
+                        let is_dynamic = call
+                            .args
+                            .first()
+                            .is_some_and(|arg| !matches!(arg.expr.as_ref(), Expr::Lit(_)));
 
                         let confidence = if is_dynamic { 0.95 } else { 0.60 };
                         let description = if is_dynamic {
-                            "eval() called with dynamic argument — high risk code execution".to_string()
+                            "eval() called with dynamic argument — high risk code execution"
+                                .to_string()
                         } else {
                             "eval() called with literal argument — low risk but flagged".to_string()
                         };
 
-                        self.add_finding(
-                            call.span.lo.0,
-                            description,
-                            None,
-                            confidence,
-                        );
+                        self.add_finding(call.span.lo.0, description, None, confidence);
                     }
 
                     // Detects: atob('...') — browser base64 decode
@@ -169,7 +154,8 @@ impl Visit for ObfuscationDetector {
             if Self::looks_like_base64(value) && value.len() > 32 {
                 self.add_finding(
                     s.span.lo.0,
-                    "Long base64-encoded string literal detected — possible encoded payload".to_string(),
+                    "Long base64-encoded string literal detected — possible encoded payload"
+                        .to_string(),
                     Some(format!("{}...", &value[..32])),
                     0.60,
                 );
@@ -182,8 +168,8 @@ impl Visit for ObfuscationDetector {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use swc_core::common::{FileName, SourceMap};
     use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
-    use swc_core::common::{SourceMap, FileName};
     // use swc_core::ecma::visit::VisitWith;
     use std::rc::Rc;
 
