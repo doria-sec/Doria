@@ -1,5 +1,5 @@
 use std::process::{Command, Stdio};
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
 fn main() {
@@ -325,8 +325,7 @@ fn extract_json_string(json: &str, key: &str) -> Option<String> {
     let after = &json[pos + needle.len()..];
     let colon = after.find(':')?;
     let after_colon = after[colon + 1..].trim_start();
-    if after_colon.starts_with('"') {
-        let inner = &after_colon[1..];
+    if let Some(inner) = after_colon.strip_prefix('"') {
         let end = inner.find('"')?;
         Some(inner[..end].to_string())
     } else {
@@ -340,6 +339,6 @@ fn extract_json_float(json: &str, key: &str) -> Option<f64> {
     let after = &json[pos + needle.len()..];
     let colon = after.find(':')?;
     let after_colon = after[colon + 1..].trim_start();
-    let end = after_colon.find(|c: char| c == ',' || c == '}' || c == '\n')?;
+    let end = after_colon.find([',', '}', '\n'])?;
     after_colon[..end].trim().parse::<f64>().ok()
 }
