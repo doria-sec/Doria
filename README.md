@@ -130,7 +130,7 @@ cargo run -p doria-core --bin scan_test -- ../test-env/obfuscated-mal obfuscated
 | LLM reasoning layer | done |
 | Slopsquatting detector | done |
 | React dashboard | done |
-| Landing page | pending |
+| Landing page | done |
 | CLI binary | done |
 | Autonomous remediation | done |
 
