@@ -15,7 +15,7 @@ joblib==1.5.3
 Levenshtein==0.27.3
 numpy==2.4.3
 pandas==3.0.1
-pyasn1==0.6.3
+pyasn1==0.6.4
 pyasn1_modules==0.4.2
 pycparser==3.0
 pydantic==2.13.4
